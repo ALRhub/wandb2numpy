@@ -1,0 +1,10 @@
+test_experiment:
+  group: fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1
+  job_type: "all"
+  runs: "all"
+
+default:
+  fields: ["train_acc", "test_acc"]
+  entity: kit-alr
+  project: wandb_export
+  output_path: wandb_data
