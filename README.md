@@ -16,8 +16,8 @@ To overwrite previously exported data, use the `--o` flag.
 Your config file needs to follow the format of `example_config.yaml`. It needs to contain the following parameters:
 * name of exported data frame
 * groups  to be exported (list of group names)
-* job types to be exported (Either "all" or a list of type names)
-* runs to be exported (Either "all" or a list of run names)
+* job types to be exported (Either "all" or a nested list of type names, one list per group in the groups list)
+* runs to be exported (Either "all" or a nested list of run names, one list per group in the groups list)
 * data fields to be exported
 * output data path
 * entity that the wandb project belongs to

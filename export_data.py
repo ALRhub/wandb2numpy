@@ -20,14 +20,19 @@ def extract_data(run, fields):
         data_dict[key] = np.array([data_point[key] for data_point in history])
     return data_dict
 
+# group_dict 
 def outer_dict_to_np_array(group_dict):
-    rep_dim = len(group_dict)
+    n_runs = len(group_dict)
     output_dict = {}
     for field in group_dict[0]:
-        steps = len(group_dict[0][field])
-        output_array = np.zeros((rep_dim, steps))
-        for rep in group_dict:
-            output_array[rep] = group_dict[rep][field]
+        max_steps = max([len(group_dict[i][field]) for i in range(n_runs)])
+        output_array = np.zeros((n_runs, max_steps))
+        for run in group_dict:
+            steps = group_dict[run][field].shape[0]
+            if steps == max_steps: # check if array has length max_steps, otherwise pad to that size with zeros (in the end)
+                output_array[run] = group_dict[run][field]
+            else:
+                output_array[run] = np.pad(group_dict[run][field], (0, max_steps - steps))
         output_dict[field] = output_array
     return output_dict
 
@@ -53,14 +58,32 @@ def create_output_dirs(config, experiment):
         os.mkdir(experiment_dir)
     return experiment_dir
 
-def save_matrix(experiment_dir, field, overwrite_flag):
+def save_matrix(matrix_dict, experiment_dir, field, overwrite_flag):
     file_path = os.path.join(experiment_dir, field)
     if os.path.isfile(file_path + ".npy") and not overwrite_flag:
         print("File " + file_path + ".npy already exists! To overwrite, rerun script with --o flag.")
     else:
         with open(file_path + ".npy", 'wb') as f:
-            np.save(f, np_group_dict[field])
-        print("Saved file " + file_path + ".npy")
+            np.save(f, matrix_dict[field])
+        print("Saved File " + file_path + ".npy, shape of NP array is " + str(matrix_dict[field].shape))
+
+def get_filtered_runs(config, experiment):
+    run_list = []
+    for i, group in enumerate(config[experiment]['groups']):
+        filter_dict = {"group": group}
+        runs = list(api.runs(config["default"]["entity"] + "/" + config["default"]["project"], filters=filter_dict))
+
+        if config[experiment]['job_types'][i] != "all":
+            if isinstance(config[experiment]['job_types'][i], list):
+                for run in runs:
+                    if run.job_type in config[experiment]['job_types'][i]:
+                        run_list.append(run)
+            else: 
+                print("Error: job_type has to be either 'all' or a list of job names")
+                return None
+        else:
+            run_list.extend(runs)
+    return run_list
 
 if __name__ == "__main__":
     config = load_config(args.config_path)
@@ -70,15 +93,15 @@ if __name__ == "__main__":
 
     api = wandb.Api()
 
-    for experiment in experiments:
-        filter_dict = {"group": config[experiment]["group"]}
-        runs = api.runs(config["default"]["entity"] + "/" + config["default"]["project"], filters=filter_dict)
+    for experiment in experiments: 
+        runs = get_filtered_runs(config, experiment)
+        print("Found following runs that match the filters:")
+        for run in runs:
+            print(run.name)
+
         group_dict = {}
         try:
-            print(f"Started processing {config[experiment]['group']}...")
             for i, run in enumerate(tqdm(runs)):
-                if config[experiment]["job_type"] != "all" and run.job_type != config[experiment]["job_type"]:
-                    continue
                 run_dict = extract_data(run, config["default"]["fields"])
                 group_dict[i] = run_dict
 
@@ -87,7 +110,7 @@ if __name__ == "__main__":
             experiment_dir = create_output_dirs(config, experiment)
 
             for field in np_group_dict.keys():
-                save_matrix(experiment_dir, field, args.o)
+                save_matrix(np_group_dict, experiment_dir, field, args.o)
                 
         except requests.exceptions.HTTPError:
             print(f"Error loading {config[experiment]['group']}.")
