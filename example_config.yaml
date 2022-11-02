@@ -1,7 +1,7 @@
 test_experiment:
   groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, torch_script_surrogate_impl_new_gmore_fmnist_cnn]
   job_types: ["all", ["run_1"]]
-  runs: "all"
+  runs: [["exp_rep_00", "exp_rep_03"], "all"]
 
 default:
   fields: ["train_acc", "test_acc"]

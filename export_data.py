@@ -1,5 +1,4 @@
 import argparse
-from genericpath import isfile
 import os
 import numpy as np
 import requests
@@ -67,22 +66,25 @@ def save_matrix(matrix_dict, experiment_dir, field, overwrite_flag):
             np.save(f, matrix_dict[field])
         print("Saved File " + file_path + ".npy, shape of NP array is " + str(matrix_dict[field].shape))
 
+def filter_match(filter_param, run_param):
+    if filter_param == "all":
+        return True
+    else:
+        return run_param in filter_param
+
 def get_filtered_runs(config, experiment):
     run_list = []
     for i, group in enumerate(config[experiment]['groups']):
         filter_dict = {"group": group}
         runs = list(api.runs(config["default"]["entity"] + "/" + config["default"]["project"], filters=filter_dict))
 
-        if config[experiment]['job_types'][i] != "all":
-            if isinstance(config[experiment]['job_types'][i], list):
-                for run in runs:
-                    if run.job_type in config[experiment]['job_types'][i]:
-                        run_list.append(run)
-            else: 
-                print("Error: job_type has to be either 'all' or a list of job names")
-                return None
-        else:
+        if config[experiment]['job_types'][i] == "all" and config[experiment]['runs'][i] == "all":
             run_list.extend(runs)
+        else:
+            for run in runs:
+                if filter_match(config[experiment]['job_types'][i], run.job_type) and filter_match(config[experiment]['runs'][i], run.name):
+                    run_list.append(run)
+            
     return run_list
 
 if __name__ == "__main__":
