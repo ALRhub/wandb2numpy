@@ -1,9 +1,21 @@
 test_experiment:
-  groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, torch_script_surrogate_impl_new_gmore_fmnist_cnn]
-  job_types: ["all", ["run_1"]]
-  runs: [["exp_rep_00", "exp_rep_03"], "all"]
+  groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
+  job_types: ["run_1"]
+  runs: ["exp_rep_00", "exp_rep_03"]
 
-default:
+  config:
+    device: 
+      values: ["cuda1", "cuda2"]
+
+  summary:
+    learning_rate:
+      min: 0
+      max: 10
+
+experiment2:
+  fields: ["test_loss"]
+
+DEFAULT:
   fields: ["train_acc", "test_acc"]
   entity: kit-alr
   project: wandb_export
