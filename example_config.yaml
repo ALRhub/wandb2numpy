@@ -1,7 +1,7 @@
 experiment1:
   groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
-  job_types: ["run_1"]
-  runs: ["exp_rep_00", "exp_rep_03"]
+  job_types: [["run_1"], ["run_1, run_2"]]
+  runs: [["exp_rep_00", "exp_rep_03"], ["exp_rep_00", "exp_rep_03"]]
 
   config:
     config_name: 
@@ -13,6 +13,8 @@ experiment1:
       max: 0.921
 
 experiment2:
+  groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
+  runs: [["exp_rep_00", "exp_rep_03"], "all"]
   fields: ["test_loss"]
 
 DEFAULT:

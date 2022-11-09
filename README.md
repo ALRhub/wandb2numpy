@@ -1,14 +1,14 @@
 # wandb2numpy
 
-Export data from wandb as NumPy arrays or panda dataframes. Data to be exported can be specified in a YAML config file.
+Export data from wandb as NumPy arrays or csv. Data to be exported can be specified in a YAML config file.
 
 ## Usage
 
-To export your data, run
+To export your data, enter the repository's directory and run
 
 ```bash
-
-python .\export_data.py <your_config>.yaml
+pip install .
+python ./export_data.py <your_config>.yaml
 
 ```
 To overwrite previously exported data, use the `--o` flag. To run not all but only some experiments from the config file, add `-e experiment1 experiment2`.
@@ -25,7 +25,7 @@ Additionally, there are a variety of optional parameters that can be used to fil
 * `groups`: run groups to be exported (list of group names).
 * `job_types`: job types to be exported (list of type names).
 * `runs`: runs to be exported (list of run names).
-* `output_data_type`: can be either `"numpy"` or `"pandas"` (default is to use NumPy)
+* `output_data_type`: can be either `"numpy"` or `"csv"` (default is to use NumPy)
 * `config`: dictionary of config entries.
 * `summary`: dictionary of summary entries.
 

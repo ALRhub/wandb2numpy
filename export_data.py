@@ -12,9 +12,9 @@ from typing import List, Tuple
 
 from wandb2numpy import util
 
-parser = argparse.ArgumentParser(description='Export data from wandb to numpy array or pandas dataframe')
+parser = argparse.ArgumentParser(description='Export data from wandb to numpy array or csv')
 parser.add_argument("config_path")
-parser.add_argument('--o', action='store_true')
+parser.add_argument('-o', action='store_true')
 parser.add_argument('-e', '--experiments', nargs='+', default=None,
                        help='Allows to specify which experiments should be exported.')
 args = parser.parse_args()
@@ -89,19 +89,28 @@ def save_matrix(matrix_dict, experiment_dir, field, overwrite_flag, config):
             with open(file_path + ".npy", 'wb') as f:
                 np.save(f, matrix_dict[field])
             print("Saved NumPy array to file " + file_path + ".npy, shape of array is " + str(matrix_dict[field].shape))
-        else:
+        elif config["output_data_type"] == "csv":
             row_names = [f"run {i}" for i in range(0, matrix_dict[field].shape[0])]
             column_names = [f"step {i}" for i in range(0, matrix_dict[field].shape[1])]
             df = pd.DataFrame(matrix_dict[field], index = row_names, columns = column_names)
             with open(file_path + ".csv", 'wb') as f:
                 df.to_csv(f)
             print("Saved Pandas DataFrame to file " + file_path + ".csv, shape of array is " + str(matrix_dict[field].shape))
+        else:
+            print(f"Error: {config['output_data_type']} is not a valid output format. Possible formats are 'numpy' and 'csv'")
         
 
 def get_filtered_runs(config):
+    filter_list = []
     filter_dict = {}
     if "groups" in config.keys() and config["groups"] != "all":
-        filter_dict = {"group": {"$in": config["groups"]}}
+        if not isinstance(config["groups"], list):
+            print("Error: groups must be either 'all' or a list of group names")
+        for i, group in enumerate(config["groups"]):
+            filter_group_dict = build_filter_dict(i, group, config)
+            filter_list.append(filter_group_dict)
+
+        filter_dict["$or"] = filter_list
 
     if "config" in config.keys():
         filter_dict = append_filter_dict("config", config["config"], filter_dict)
@@ -109,17 +118,23 @@ def get_filtered_runs(config):
     if "summary" in config.keys():
         filter_dict = append_filter_dict("summary_metrics", config["summary"], filter_dict)
 
+    print(filter_dict)
     run_list = list(api.runs(config["entity"] + "/" + config["project"], filters=filter_dict))
-    run_list_filtered = []
-
-    if 'job_types' in config.keys() and config['job_types'] == "all" and 'runs' in config.keys() and config['runs'] == "all":
-        run_list_filtered = run_list
-    else:
-        for run in run_list:
-            if util.filter_match(config, 'job_types', run.job_type) and util.filter_match(config, 'runs', run.name):
-                run_list_filtered.append(run)
     
-    return run_list_filtered
+    return run_list
+
+def build_filter_dict(idx: int, group: str, config: dict) -> dict:
+    filter_dict = {}
+    filter_dict["group"] = group
+    if 'job_types' in config.keys() and config['job_types'] != "all" and config['job_types'][idx] != "all":
+        filter_dict["jobType"] = {}
+        filter_dict["jobType"]["$in"] = config['job_types'][idx]
+
+    if 'runs' in config.keys() and config['runs'] != "all" and config['runs'][idx] != "all":
+        filter_dict["display_name"] = {}
+        filter_dict["display_name"]["$in"] = config['runs'][idx]
+
+    return filter_dict
 
 def append_filter_dict(dict_name: str, param_dict: dict, filter_dict: dict) -> dict:
     for key in param_dict:
