@@ -16,7 +16,6 @@ def get_filtered_runs(config, api):
     if "summary" in config.keys():
         filter_dict = append_filter_dict("summary_metrics", config["summary"], filter_dict)
 
-    print(filter_dict)
     run_list = list(api.runs(config["entity"] + "/" + config["project"], filters=filter_dict))
     
     return run_list

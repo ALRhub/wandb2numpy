@@ -11,7 +11,7 @@ pip install .
 python ./export_data.py <your_config>.yaml
 
 ```
-To overwrite previously exported data, use the `--o` flag. To run not all but only some experiments from the config file, add `-e experiment1 experiment2`.
+To overwrite previously exported data, use the `-o` flag. To run not all but only some experiments from the config file, add `-e my_experiment1 my_experiment2`.
 
 All parameters in the config file can either be defined in DEFAULT or in a specific experiment. If they are defined in both, the definition in the experiment overwrites the one in DEFAULT. There are some parameters that must be specified either in DEFAULT or in the experiments, and some that are optional. The name of the exported data frame is given by the experiment name in the config file (top level key). Your config can contain multiple experiments, the only restriction is that it needs to contain one at minimum.
 
