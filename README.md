@@ -1,6 +1,6 @@
 # wandb2numpy
 
-Export data from wandb as numpy arrays or panda dataframes. Data to be exported can be specified in a YAML config file.
+Export data from wandb as NumPy arrays or panda dataframes. Data to be exported can be specified in a YAML config file.
 
 ## Usage
 
@@ -11,14 +11,24 @@ To export your data, run
 python .\export_data.py <your_config>.yaml
 
 ```
-To overwrite previously exported data, use the `--o` flag.
+To overwrite previously exported data, use the `--o` flag. To run not all but only some experiments from the config file, add `-e experiment1 experiment2`.
 
-Your config file needs to follow the format of `example_config.yaml`. It needs to contain the following parameters:
-* name of exported data frame
-* groups  to be exported (list of group names)
-* job types to be exported (nested list, either "all" or a list of type names per group in the groups list)
-* runs to be exported (nested list, either "all" or a list of run names per group in the groups list)
-* data fields to be exported
-* output data path
-* entity that the wandb project belongs to
-* name of the wandb project
+All parameters in the config file can either be defined in DEFAULT or in a specific experiment. If they are defined in both, the definition in the experiment overwrites the one in DEFAULT. There are some parameters that must be specified either in DEFAULT or in the experiments, and some that are optional. The name of the exported data frame is given by the experiment name in the config file (top level key). Your config can contain multiple experiments, the only restriction is that it needs to contain one at minimum.
+
+Parameters that must be specified either in DEFAULT or in an experiment include:
+* `entity`: entity that the WandB project belongs to.
+* `project`: name of the WandB project.
+* `fields`: List of metrics that should be exported.
+* `output_path`: path to a directory where all output data will be stored. A subdirectory for each experiment will be created.
+
+Additionally, there are a variety of optional parameters that can be used to filter the runs. If they are not specified, by default all runs are taken. Those optional parameters include:
+* `groups`: run groups to be exported (list of group names).
+* `job_types`: job types to be exported (list of type names).
+* `runs`: runs to be exported (list of run names).
+* `output_data_type`: can be either `"numpy"` or `"pandas"` (default is to use NumPy)
+* `config`: dictionary of config entries.
+* `summary`: dictionary of summary entries.
+
+Each WandB run has both a config dictionary and a summary dictionary associated with it. Using the `config` and `summary` dictionaries mentioned above, runs can be filtered with regards to those attributes. Each entry in the dictionaries must specify either a list of allowed values (`values: ["value1", "value2"]`) or for numeric attributes a range in which they must lie. This is done by providing a `min` and/or a `max` value.
+
+All of this is showcased in `example_config.yaml`.

@@ -1,16 +1,16 @@
-test_experiment:
+experiment1:
   groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
   job_types: ["run_1"]
   runs: ["exp_rep_00", "exp_rep_03"]
 
   config:
-    device: 
-      values: ["cuda1", "cuda2"]
+    config_name: 
+      values: ["hp_eval_config_0.yml", "hp_eval_config_1.yml"]
 
   summary:
-    learning_rate:
-      min: 0
-      max: 10
+    best_test_acc:
+      min: 0.92
+      max: 0.921
 
 experiment2:
   fields: ["test_loss"]
@@ -20,3 +20,4 @@ DEFAULT:
   entity: kit-alr
   project: wandb_export
   output_path: wandb_data
+  output_data_type: numpy
