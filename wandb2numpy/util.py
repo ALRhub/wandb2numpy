@@ -7,6 +7,7 @@ except ImportError:
 
 def extract_data(run, fields):
     history = run.scan_history()
+
     data_dict = {}
     for key in fields:
         data_list = []

@@ -1,11 +1,11 @@
 import argparse
-import requests
 import wandb
+import sys
 
 from tqdm import tqdm
 
 from wandb2numpy import util
-from wandb2numpy.config_loader import load_config, merge_default
+from wandb2numpy.config_loader import load_config, check_valid_configs, merge_default
 from wandb2numpy.filtering import get_filtered_runs
 from wandb2numpy.save_experiment import create_output_dirs, save_matrix
 
@@ -19,6 +19,9 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     default_config, experiment_configs, experiment_names = load_config(args.config_path, args.experiments)
+    valid_configs = check_valid_configs(default_config, experiment_configs, experiment_names)
+    if not valid_configs:
+        sys.exit("Aborting execution because of invalid config file")
     config_list = merge_default(default_config, experiment_configs)
     
     api = wandb.Api()
@@ -26,6 +29,11 @@ if __name__ == "__main__":
     for i, config in enumerate(config_list): 
         print(f"Processing experiment {experiment_names[i]} ...")
         run_list = get_filtered_runs(config, api)
+
+        if not run_list:
+            print("Warning: No matching runs founds for this experiment. Skipping...")
+            continue
+
         print("Found following runs that match the filters:")
         for run in run_list:
             print(run.name)

@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import List, Tuple
 from wandb2numpy import util
 
+
 def load_config(config_path: str, experiment_list: List[str]) -> Tuple[dict, List[dict], List[str]]:
     """Loads a list of experiment configs and the default config from a config.yaml file. 
     If experiment list is not None, only the experiments in experiment_list are included.
@@ -23,7 +24,7 @@ def load_config(config_path: str, experiment_list: List[str]) -> Tuple[dict, Lis
             experiment_configs = []
             experiment_names = []
             for experiment in config.keys():
-                if experiment in experiment_list or experiment_list is None:
+                if experiment_list is None or experiment in experiment_list:
                     experiment_configs.append(config[experiment])
                     experiment_names.append(experiment)
 
@@ -31,6 +32,54 @@ def load_config(config_path: str, experiment_list: List[str]) -> Tuple[dict, Lis
 
         except yaml.YAMLError as exc:
             print(exc)
+
+def check_valid_configs(default_config, experiment_configs, experiment_names):
+    # entity, project, fields and output_path must be specified either in default or in each experiment
+    required_params = ["entity", "project", "fields", "output_path"]
+    optional_filter_lists = ["groups", "job_types", "runs"]
+    optional_filter_dicts = ["config, summary"]
+
+    for parameter in required_params:
+        if default_config is None or parameter not in default_config.keys():
+            for i, exp_config in enumerate(experiment_configs):
+                if parameter not in exp_config.keys():
+                    print(f"Error: {parameter} is neither specified in DEFAULT nor in {experiment_names[i]}")
+                    return False
+
+    # check that all parameters have the correct format if they are included
+    if default_config is not None:
+        is_valid_config = check_data_types(default_config, "DEFAULT", required_params, optional_filter_lists, optional_filter_dicts)
+        if not is_valid_config:
+                return False
+
+    for j, exp_config in enumerate(experiment_configs):
+        is_valid_config = check_data_types(exp_config, experiment_names[j], required_params, optional_filter_lists, optional_filter_dicts)
+        if not is_valid_config:
+            return False
+
+    return True
+
+def check_data_types(config: dict, config_name: str, required_params: List, optional_filter_lists: List, optional_filter_dicts: List):
+    for required_param in required_params:
+            if required_param in config.keys():
+                if not isinstance(required_param, str):
+                    print(f"Error: {required_param} in {config_name} is not of type String")
+                    return False
+
+    for opt_list in optional_filter_lists:
+        if opt_list in config.keys():
+            if not isinstance(config[opt_list], List):
+                print(f"Error: {opt_list} in {config_name} is not of type List")
+                return False
+
+    for opt_dict in optional_filter_dicts:
+        if opt_dict in config.keys():
+            if not isinstance(config[opt_dict], dict):
+                print(f"Error: {opt_dict} in {config_name} is not of type Dict")
+                return False
+    
+    return True
+
 
 def merge_default(default_config: dict, experiment_configs: List[dict]) -> List[dict]:
     """merges each individual experiment configuration with the default parameters

@@ -1,0 +1,8 @@
+# This is the minimal working config. Because not specified otherwise, all runs in the project
+# that include the field "test_acc" will be exported as a numpy array to the directory "wandb_data".
+
+experiment1:
+  fields: ["test_acc"]
+  entity: kit-alr
+  project: wandb_export
+  output_path: wandb_data

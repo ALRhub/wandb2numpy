@@ -1,6 +1,7 @@
 def get_filtered_runs(config, api):
     filter_list = []
     filter_dict = {}
+    # if "groups" is provided, "runs" and "job_types" are expected to be nested lists
     if "groups" in config.keys() and config["groups"] != "all":
         if not isinstance(config["groups"], list):
             print("Error: groups must be either 'all' or a list of group names")
@@ -9,6 +10,14 @@ def get_filtered_runs(config, api):
             filter_list.append(filter_group_dict)
 
         filter_dict["$or"] = filter_list
+
+    else: # no groups list provided, thus list for runs and job_types are not nested
+        if "runs" in config.keys():
+            filter_dict["display_name"] = {}
+            filter_dict["display_name"]["$in"] = config['runs']
+        if "job_types" in config.keys():
+            filter_dict["display_name"] = {}
+            filter_dict["display_name"]["$in"] = config['runs']
 
     if "config" in config.keys():
         filter_dict = append_filter_dict("config", config["config"], filter_dict)
