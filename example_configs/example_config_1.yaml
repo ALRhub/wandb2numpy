@@ -1,3 +1,4 @@
+# Individual experiments extend or overwrite the DEFAULT config
 experiment1:
   groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
   job_types: [["run_1"], ["run_1, run_2"]]
@@ -22,4 +23,3 @@ DEFAULT:
   entity: kit-alr
   project: wandb_export
   output_path: wandb_data
-  output_data_type: numpy

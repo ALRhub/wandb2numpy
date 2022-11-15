@@ -1,37 +1,50 @@
 import numpy as np
+from tqdm import tqdm
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
 
-def extract_data(run, fields):
-    history = run.scan_history()
+def extract_data(run, fields, config):
+    if 'history_samples' in config.keys():
+        history = run.history(keys=fields, samples=config['history_samples'], pandas=False)
+    else:
+        history = run.scan_history()
 
     data_dict = {}
     for key in fields:
         data_list = []
+        is_valid_key = True
         for data_point in history:
             if not key in data_point.keys():
-                print(f"Error: Run {run.name} does not have a field called {key}")
+                tqdm.write(f"Warning: Run {run.name} does not have a field called {key}")
+                is_valid_key = False
                 break
-            data_list.append(data_point[key])
+            if is_valid_key:
+                data_list.append(data_point[key])
         data_dict[key] = np.array(data_list)
-        #data_dict[key] = np.array([data_point[key] for data_point in history])
     return data_dict
 
 def outer_dict_to_np_array(group_dict):
     n_runs = len(group_dict)
     output_dict = {}
     for field in group_dict[0]:
-        max_steps = max([len(group_dict[i][field]) for i in range(n_runs)])
-        output_array = np.zeros((n_runs, max_steps))
-        for run in group_dict:
-            steps = group_dict[run][field].shape[0]
+        non_empty_runs = [group_dict[i][field] for i in range(n_runs) if len(group_dict[i][field]) != 0]
+        n_non_empty_runs = len(non_empty_runs)
+        if n_non_empty_runs > 0:
+            max_steps = max([len(run) for run in non_empty_runs])
+        else:
+            max_steps = 0
+        
+        print(f"Number of runs that include field {field}: {n_non_empty_runs}")
+        output_array = np.zeros((n_non_empty_runs, max_steps))
+        for k, run in enumerate(non_empty_runs):
+            steps = run.shape[0]
             if steps == max_steps: # check if array has length max_steps, otherwise pad to that size with NaNs (in the end)
-                output_array[run] = group_dict[run][field]
+                output_array[k] = run
             else:
-                output_array[run] = pad_run(group_dict[run][field], max_steps)
+                output_array[k] = pad_run(run, max_steps)
                 
         output_dict[field] = output_array
     return output_dict

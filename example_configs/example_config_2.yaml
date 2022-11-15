@@ -1,0 +1,25 @@
+my_exp_1:
+  fields: ["train_loss"]
+  entity: kit-alr
+  project: wandb_export
+  output_path: wandb_data
+
+  history_samples: 100
+
+my_exp_2:
+  fields: ["test_acc", "train_acc"]
+  entity: kit-alr
+  project: wandb_export
+  output_path: wandb_data
+
+  history_samples: 500
+  output_data_type: csv
+
+
+my_exp_3:
+  fields: ["mean_eta"]
+  entity: kit-alr
+  project: wandb_export
+  output_path: my_data_dir
+
+  output_data_type: csv

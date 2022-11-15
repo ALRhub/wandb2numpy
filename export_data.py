@@ -24,7 +24,7 @@ if __name__ == "__main__":
         sys.exit("Aborting execution because of invalid config file")
     config_list = merge_default(default_config, experiment_configs)
     
-    api = wandb.Api()
+    api = wandb.Api(timeout=15)
 
     for i, config in enumerate(config_list): 
         print(f"Processing experiment {experiment_names[i]} ...")
@@ -38,10 +38,13 @@ if __name__ == "__main__":
         for run in run_list:
             print(run.name)
 
+        if 'history_samples' in config.keys():
+            print(f"Using sampled history of runs with sample size {config['history_samples']}. Runs that are shorter than that keep their original length.")
+
         all_runs_dict = {}
 
         for j, run in enumerate(tqdm(run_list)):
-            current_run_dict = util.extract_data(run, config["fields"])
+            current_run_dict = util.extract_data(run, config["fields"], config)
             all_runs_dict[j] = current_run_dict
 
         np_all_runs_dict = util.outer_dict_to_np_array(all_runs_dict)

@@ -49,6 +49,7 @@ def check_valid_configs(default_config, experiment_configs, experiment_names):
     # check that all parameters have the correct format if they are included
     if default_config is not None:
         is_valid_config = check_data_types(default_config, "DEFAULT", required_params, optional_filter_lists, optional_filter_dicts)
+        
         if not is_valid_config:
                 return False
 
@@ -56,6 +57,9 @@ def check_valid_configs(default_config, experiment_configs, experiment_names):
         is_valid_config = check_data_types(exp_config, experiment_names[j], required_params, optional_filter_lists, optional_filter_dicts)
         if not is_valid_config:
             return False
+
+    
+    
 
     return True
 
@@ -68,8 +72,8 @@ def check_data_types(config: dict, config_name: str, required_params: List, opti
 
     for opt_list in optional_filter_lists:
         if opt_list in config.keys():
-            if not isinstance(config[opt_list], List):
-                print(f"Error: {opt_list} in {config_name} is not of type List")
+            if not isinstance(config[opt_list], List) and config[opt_list] != "all":
+                print(f"Error: {opt_list} in {config_name} is not of type List or equal to 'all'")
                 return False
 
     for opt_dict in optional_filter_dicts:
@@ -77,7 +81,29 @@ def check_data_types(config: dict, config_name: str, required_params: List, opti
             if not isinstance(config[opt_dict], dict):
                 print(f"Error: {opt_dict} in {config_name} is not of type Dict")
                 return False
-    
+
+    # if groups are provided as a list, runs and job_types must be nested lists with equal length (if they are provided)
+    if 'groups' in config.keys():
+        if config['groups'] != "all":
+            if 'job_types' in config.keys():
+                if config['job_types'] != "all" and len(config['job_types']) != len(config['groups']):
+                    print(f"Error: List of job_types must have the same length as groups list")
+                    return False
+                elif config['job_types'] != "all":
+                    for entry in config['job_types']:
+                        if not isinstance(entry, List) and entry != "all":
+                            print("Error: job_types must be a nested list if groups are provided as a list")
+                            return False
+            
+            if 'runs' in config.keys():
+                if config['runs'] != "all" and len(config['runs']) != len(config['groups']):
+                    print(f"Error: List of runs must have the same length as groups list")
+                    return False
+                elif config['runs'] != "all":
+                    for entry in config['runs']:
+                        if not isinstance(entry, List) and entry != "all":
+                            print("Error: runs must be a nested list if groups are provided as a list")
+                            return False
     return True
 
 
