@@ -26,9 +26,10 @@ Additionally, there are a variety of optional parameters that can be used to fil
 * `job_types`: job types to be exported (list of type names).
 * `runs`: runs to be exported (list of run names).
 * `output_data_type`: can be either `"numpy"` or `"csv"` (default is to use NumPy)
+* `history_samples`: number of steps from the history that are sampled. If not specified, the full history will be used. Using full history will be very slow for runs with > 100k steps.
 * `config`: dictionary of config entries.
 * `summary`: dictionary of summary entries.
 
 Each WandB run has both a config dictionary and a summary dictionary associated with it. Using the `config` and `summary` dictionaries mentioned above, runs can be filtered with regards to those attributes. Each entry in the dictionaries must specify either a list of allowed values (`values: ["value1", "value2"]`) or for numeric attributes a range in which they must lie. This is done by providing a `min` and/or a `max` value.
 
-All of this is showcased in `example_config.yaml`.
+All of this is showcased in examplary config files in the folder `example_configs`.
