@@ -38,7 +38,7 @@ if __name__ == "__main__":
         for run in run_list:
             print(run.name)
 
-        if 'history_samples' in config.keys():
+        if 'history_samples' in config.keys() and config['history_samples'] != "all":
             print(f"Using sampled history of runs with sample size {config['history_samples']}. Runs that are shorter than that keep their original length.")
 
         all_runs_dict = {}

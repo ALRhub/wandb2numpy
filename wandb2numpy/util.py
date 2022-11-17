@@ -7,10 +7,20 @@ except ImportError:
     from collections import Mapping
 
 def extract_data(run, fields, config):
+    max_samples = 12000
     if 'history_samples' in config.keys():
-        history = run.history(keys=fields, samples=config['history_samples'], pandas=False)
+        if config['history_samples'] == "all":
+            history = run.scan_history()
+        else:
+            if not isinstance(config['history_samples'], int):
+                tqdm.write(f"Error: history_samples must be 'all' or of type Integer")
+                history = []
+            else:
+                n_samples = min(config['history_samples'], max_samples)
+                history = run.history(keys=fields, samples=n_samples, pandas=False)
     else:
-        history = run.scan_history()
+        history = run.history(keys=fields, samples=max_samples, pandas=False)
+        
 
     data_dict = {}
     for key in fields:

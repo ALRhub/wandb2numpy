@@ -26,7 +26,7 @@ Additionally, there are a variety of optional parameters that can be used to fil
 * `job_types`: job types to be exported (list of type names).
 * `runs`: runs to be exported (list of run names).
 * `output_data_type`: can be either `"numpy"` or `"csv"` (default is to use NumPy)
-* `history_samples`: number of steps from the history that are sampled. If not specified, the full history will be used. Using full history will be very slow for runs with > 100k steps.
+* `history_samples`: Either `"all"` or number of steps from the history that are sampled (Integer). If not specified, 12k samples will be used. Due to a bug in the wandb API, this is the maximum supported sample size for now. A discussion on this can be found [**here**](http://markdown-here.com)https://community.wandb.ai/t/calling-run-history-samples-n-samples-returns-a-sample-size-different-from-n-samples/3414. Using full history will be very slow for runs with > 100k steps.
 * `config`: dictionary of config entries.
 * `summary`: dictionary of summary entries.
 

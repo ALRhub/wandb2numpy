@@ -19,7 +19,7 @@ def create_output_dirs(config: str, experiment: str) -> str:
 def save_matrix(matrix_dict, experiment_dir, field, overwrite_flag, config):
     file_path = os.path.join(experiment_dir, field)
     if os.path.isfile(file_path + ".npy") and not overwrite_flag:
-        print("File " + file_path + ".npy already exists! To overwrite, rerun script with --o flag.")
+        print("File " + file_path + ".npy already exists! To overwrite, rerun script with -o flag.")
     else:   
         if not "output_data_type" in config.keys() or config["output_data_type"] == "numpy":
             with open(file_path + ".npy", 'wb') as f:
