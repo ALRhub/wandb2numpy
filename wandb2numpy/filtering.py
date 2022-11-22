@@ -18,13 +18,16 @@ def get_filtered_runs(config, api):
         if "job_types" in config.keys():
             filter_dict["display_name"] = {}
             filter_dict["display_name"]["$in"] = config['runs']
+        if "tags" in config.keys():
+            filter_dict["tags"] = {}
+            filter_dict["tags"]["$in"] = config['tags']
 
     if "config" in config.keys():
         filter_dict = append_filter_dict("config", config["config"], filter_dict)
 
     if "summary" in config.keys():
         filter_dict = append_filter_dict("summary_metrics", config["summary"], filter_dict)
-
+        
     run_list = list(api.runs(config["entity"] + "/" + config["project"], filters=filter_dict))
     
     return run_list
@@ -39,6 +42,10 @@ def build_filter_dict(idx: int, group: str, config: dict) -> dict:
     if 'runs' in config.keys() and config['runs'] != "all" and config['runs'][idx] != "all":
         filter_dict["display_name"] = {}
         filter_dict["display_name"]["$in"] = config['runs'][idx]
+
+    if 'tags' in config.keys() and config['tags'] != "all" and config['tags'][idx] != "all":
+        filter_dict["tags"] = {}
+        filter_dict["tags"]["$in"] = config['tags'][idx]
 
     return filter_dict
 

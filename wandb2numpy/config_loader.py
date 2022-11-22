@@ -58,9 +58,6 @@ def check_valid_configs(default_config, experiment_configs, experiment_names):
         if not is_valid_config:
             return False
 
-    
-    
-
     return True
 
 def check_data_types(config: dict, config_name: str, required_params: List, optional_filter_lists: List, optional_filter_dicts: List):
@@ -83,29 +80,42 @@ def check_data_types(config: dict, config_name: str, required_params: List, opti
                 return False
 
     # if groups are provided as a list, runs and job_types must be nested lists with equal length (if they are provided)
-    if 'groups' in config.keys():
-        if config['groups'] != "all":
-            if 'job_types' in config.keys():
-                if config['job_types'] != "all" and len(config['job_types']) != len(config['groups']):
-                    print(f"Error: List of job_types must have the same length as groups list")
-                    return False
-                elif config['job_types'] != "all":
-                    for entry in config['job_types']:
-                        if not isinstance(entry, List) and entry != "all":
-                            print("Error: job_types must be a nested list if groups are provided as a list")
-                            return False
-            
-            if 'runs' in config.keys():
-                if config['runs'] != "all" and len(config['runs']) != len(config['groups']):
-                    print(f"Error: List of runs must have the same length as groups list")
-                    return False
-                elif config['runs'] != "all":
-                    for entry in config['runs']:
-                        if not isinstance(entry, List) and entry != "all":
-                            print("Error: runs must be a nested list if groups are provided as a list")
-                            return False
+    if 'groups' in config.keys() and config['groups'] != "all":
+        if not check_nested_list('job_types', config):
+            return False
+        if not check_nested_list('runs', config):
+            return False
+        if not check_nested_list('tags', config):
+            return False
+    else:
+        if not check_not_nested('job_types', config):
+            return False
+        if not check_not_nested('runs', config):
+            return False
+        if not check_not_nested('tags', config):
+            return False
+
     return True
 
+def check_nested_list(param_name: str, config: dict):
+    if param_name in config.keys():
+        if config[param_name] != "all" and len(config[param_name]) != len(config['groups']):
+            print(f"Error: List of {param_name} must have the same length as groups list")
+            return False
+        elif config[param_name] != "all":
+            for entry in config[param_name]:
+                if not isinstance(entry, List) and entry != "all":
+                    print(f"Error: {param_name} must be a nested list if groups are provided as a list")
+                    return False
+    return True
+
+def check_not_nested(param_name: str, config: dict):
+    if param_name in config.keys() and config[param_name] != "all":
+        for entry in config[param_name]:
+            if not isinstance(entry, str):
+                print(f"Error: {param_name} must be a flat list of Strings if groups list is not provided")
+                return False
+    return True
 
 def merge_default(default_config: dict, experiment_configs: List[dict]) -> List[dict]:
     """merges each individual experiment configuration with the default parameters
