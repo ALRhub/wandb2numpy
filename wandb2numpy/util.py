@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 try:
@@ -36,11 +37,11 @@ def extract_data(run, fields, config):
         data_dict[key] = np.array(data_list)
     return data_dict
 
-def outer_dict_to_np_array(group_dict):
-    n_runs = len(group_dict)
+def run_dict_to_field_dict(run_dict, config):
+    n_runs = len(run_dict)
     output_dict = {}
-    for field in group_dict[0]:
-        non_empty_runs = [group_dict[i][field] for i in range(n_runs) if len(group_dict[i][field]) != 0]
+    for field in run_dict[0]:
+        non_empty_runs = [run_dict[i][field] for i in range(n_runs) if len(run_dict[i][field]) != 0]
         n_non_empty_runs = len(non_empty_runs)
         if n_non_empty_runs > 0:
             max_steps = max([len(run) for run in non_empty_runs])
@@ -55,8 +56,13 @@ def outer_dict_to_np_array(group_dict):
                 output_array[k] = run
             else:
                 output_array[k] = pad_run(run, max_steps)
-                
-        output_dict[field] = output_array
+        if "output_data_type" in config.keys() and config["output_data_type"] == "csv":
+            row_names = [f"run {i}" for i in range(0, output_array.shape[0])]
+            column_names = [f"step {i}" for i in range(0, output_array.shape[1])]
+            df = pd.DataFrame(output_array, index = row_names, columns = column_names)
+            output_dict[field] = df
+        else:
+            output_dict[field] = output_array
     return output_dict
 
 def pad_run(array, max_steps):

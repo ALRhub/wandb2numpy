@@ -4,16 +4,29 @@ Export data from wandb as NumPy arrays or csv. Data to be exported can be specif
 
 ## Usage
 
-To export your data, enter the repository's directory and run
+To install the package, enter the repository's directory and run
 
 ```bash
 pip install .
-python ./export_data.py <your_config>.yaml
-
 ```
-To overwrite previously exported data, use the `-o` flag. To run not all but only some experiments from the config file, add `-e my_experiment1 my_experiment2`.
 
-All parameters in the config file can either be defined in DEFAULT or in a specific experiment. If they are defined in both, the definition in the experiment overwrites the one in DEFAULT. There are some parameters that must be specified either in DEFAULT or in the experiments, and some that are optional. The name of the exported data frame is given by the experiment name in the config file (top level key). Your config can contain multiple experiments, the only restriction is that it needs to contain one at minimum.
+Now there are two ways that you can export your data: Via the command line or from within a Python script.
+To export your data using the command line, run:
+
+```bash
+python ./export_data.py <your_config>.yaml
+```
+
+From within a Python script, you can call the function like this:
+```bash
+import wandb2numpy
+data_dict, config_list = wandb2numpy.export_data(config)
+```
+Config needs to be a dictionary that corresponds to the structure of valid YAML files that is described below.
+
+To overwrite previously exported data, use the `-o` flag. To run not all but only some experiments from the config file, add `-e my_experiment1 my_experiment2`. If you are calling the function from within Python, you can provide a list for the optional parameter `experiment_list = my_list` to specify what experiments to run. The function will not save any data, it will only return the exported data in form of a dictionary as well as a list of configurations for all experiments that was used for the export. The returned dictionary has one entry for each experiment on the top level. On the level below, it contains a pandas dataframe or a numpy array for each field of the experiment, depending on the `output_data_type` in the config.
+
+All parameters in the config can either be defined in DEFAULT or in a specific experiment. If they are defined in both, the definition in the experiment overwrites the one in DEFAULT. There are some parameters that must be specified either in DEFAULT or in the experiments, and some that are optional. The name of the exported data frame is given by the experiment name in the config file (top level key). Your config can contain multiple experiments, the only restriction is that it needs to contain one at minimum.
 
 Parameters that must be specified either in DEFAULT or in an experiment include:
 * `entity`: entity that the WandB project belongs to.
