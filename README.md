@@ -5,14 +5,14 @@ Export data from wandb as NumPy arrays or csv. Data to be exported can be specif
 ## Installation
 
 ### Automatic
-The easiest way to install wandb2numpy is to run
+The easiest way to install wandb2numpy is to run:
 ```bash
 pip install wandb2numpy
 ```
 Afterwards, test your installation by calling `import wandb2numpy` from a Python environment.
 
 ### Manual
-If you want to look at the code and potentially modify it, you can also manually install the package. To do that, clone this repository, enter the repository's directory and run
+If you want to look at the code and potentially modify it, you can also manually install the package. To do that, clone this repository, enter the repository's directory and run:
 
 ```bash
 pip install .
