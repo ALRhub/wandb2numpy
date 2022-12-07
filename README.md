@@ -2,24 +2,38 @@
 
 Export data from wandb as NumPy arrays or csv. Data to be exported can be specified in a YAML config file.
 
-## Usage
+## Installation
 
-To install the package, enter the repository's directory and run
+### Automatic
+The easiest way to install wandb2numpy is to run
+```bash
+pip install wandb2numpy
+```
+Afterwards, test your installation by calling `import wandb2numpy` from a Python environment.
+
+### Manual
+If you want to look at the code and potentially modify it, you can also manually install the package. To do that, clone this repository, enter the repository's directory and run
 
 ```bash
 pip install .
 ```
 
-Now there are two ways that you can export your data: Via the command line or from within a Python script.
-To export your data using the command line, run:
+## Usage
 
+There are two ways that you can export your data: Via the command line or from within a Python script.
+To export your data using the command line, the easiest way is to run:
+```bash
+wandb2numpy <your_config>.yaml
+```
+
+To overwrite previously exported data, use the `-o` flag. To run not all but only some experiments from the config file, add `-e my_experiment1 my_experiment2`.
+
+In case you installed the package manually, you can also execute the Python script directly:
 ```bash
 python ./export_data.py <your_config>.yaml
 ```
-To overwrite previously exported data, use the `-o` flag. To run not all but only some experiments from the config file, add `-e my_experiment1 my_experiment2`.
 
-
-From within a Python script, you can call the function like this:
+The other option is to use wandb2numpy from within a Python script. In order to do that, call the function like this:
 ```bash
 import wandb2numpy
 data_dict, config_list = wandb2numpy.export_data(config)
