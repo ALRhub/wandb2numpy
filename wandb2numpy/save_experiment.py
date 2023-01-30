@@ -17,7 +17,19 @@ def create_output_dirs(config: str, experiment: str) -> str:
     return experiment_dir
 
 def save_matrix(matrix_dict, experiment_dir, field, overwrite_flag, config):
-    file_path = os.path.join(experiment_dir, field)
+    # If field name contains "/", create subdirectory to reflect hierarchic field structure
+    if "/" in field:
+        str_parts = field.split("/")
+        for idx in range(len(str_parts) - 1):
+            experiment_dir = os.path.join(experiment_dir, str_parts[idx])
+            isdir_experiment = os.path.isdir(experiment_dir)
+            if not isdir_experiment:
+                os.mkdir(experiment_dir)
+        file_path = os.path.join(experiment_dir, str_parts[-1])
+            
+    else:
+        file_path = os.path.join(experiment_dir, field)
+
     if "output_data_type" in config.keys() and config["output_data_type"] == "csv": # CSV
         if os.path.isfile(file_path + ".csv") and not overwrite_flag:
             print("Error: File " + file_path + ".csv already exists! To overwrite, rerun script with -o flag.")

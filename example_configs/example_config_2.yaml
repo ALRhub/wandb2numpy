@@ -1,6 +1,6 @@
 # custom number of history samples
 my_exp_1:
-  fields: ["train_loss"]
+  fields: "all"
   history_samples: 100
 
 # export as CSV
@@ -19,6 +19,7 @@ my_exp_3:
 # Filter by tags
 my_exp_4:
   fields: ["test_acc", "train_acc"]
+  groups: [fmnist_dropout_cnn_adam_standard_hpo_algo_1_env_1, fmnist_dropout_cnn_new_gmore_elbo_mean_kl_standard_hpo_algo_1_env_1]
   tags: [["tag_1", "tag_2"], ["tag_2", "tag_3"]]
 
 DEFAULT:

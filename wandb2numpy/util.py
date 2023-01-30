@@ -9,6 +9,17 @@ except ImportError:
 
 def extract_data(run, fields, config):
     max_samples = 12000
+    
+    if fields == "all" or fields == ["all"]:
+        # get history with only 1 sample, to extract all available field names
+        dummy_history_all_fields = run.history(samples = 1, pandas=False)
+        all_fields_list = list(dummy_history_all_fields[0].keys())
+        # remove fields that are automatically logged by wandb
+        all_fields_list.remove("_step")
+        all_fields_list.remove("_runtime")
+        all_fields_list.remove("_timestamp")
+        fields = all_fields_list
+
     if 'history_samples' in config.keys():
         if config['history_samples'] == "all":
             history = run.scan_history()
@@ -21,7 +32,6 @@ def extract_data(run, fields, config):
                 history = run.history(keys=fields, samples=n_samples, pandas=False)
     else:
         history = run.history(keys=fields, samples=max_samples, pandas=False)
-        
 
     data_dict = {}
     for key in fields:
@@ -41,7 +51,7 @@ def run_dict_to_field_dict(run_dict, config):
     n_runs = len(run_dict)
     output_dict = {}
     for field in run_dict[0]:
-        non_empty_runs = [run_dict[i][field] for i in range(n_runs) if len(run_dict[i][field]) != 0]
+        non_empty_runs = [run_dict[i][field] for i in range(n_runs) if field in run_dict[i].keys() and len(run_dict[i][field]) != 0]
         n_non_empty_runs = len(non_empty_runs)
         if n_non_empty_runs > 0:
             max_steps = max([len(run) for run in non_empty_runs])
@@ -68,7 +78,7 @@ def run_dict_to_field_dict(run_dict, config):
 def pad_run(array, max_steps):
     steps = array.shape[0]
     print(f"Warning: Run has {max_steps - steps} steps less than longest run, padding array with NaNs")
-    return np.pad(array, (0, max_steps - steps), 'constant', constant_values=np.nan)
+    return np.pad(array.astype('float64'), (0, max_steps - steps), 'constant', constant_values=np.nan)
 
 
 def deep_update(base_dict: dict, update_dict: dict) -> dict:
