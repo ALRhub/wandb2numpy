@@ -36,9 +36,12 @@ def parse_config(config: dict, experiment_list: List[str]) -> Tuple[dict, List[d
 
     return default_config, experiment_configs, experiment_names
 
-def check_valid_configs(default_config, experiment_configs, experiment_names):
-    # entity, project, fields and output_path must be specified either in default or in each experiment
-    required_params = ["entity", "project", "fields", "output_path"]
+def check_valid_configs(default_config, experiment_configs, experiment_names, from_command_line):
+    # entity, project, fields and output_path (for command line usage) must be specified either in default or in each experiment
+    required_params = ["entity", "project", "fields"]
+    if from_command_line:
+        required_params.append("output_path")
+
     optional_filter_lists = ["groups", "job_types", "runs"]
     optional_filter_dicts = ["config, summary"]
 

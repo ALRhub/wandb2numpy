@@ -8,7 +8,7 @@ from wandb2numpy import util
 from wandb2numpy.config_loader import parse_config, check_valid_configs, merge_default
 from wandb2numpy.filtering import get_filtered_runs
 
-def export_data(config: Dict, experiments_list: List[str] = None) -> Tuple[List, List[str]]:
+def export_data(config: Dict, experiments_list: List[str] = None, from_command_line: bool = False) -> Tuple[List, List[str]]:
     """Exports data to numpy or pandas, according to specifications provided in the config dictionary
     Arguments:
         config {dict} -- config dictionary
@@ -20,7 +20,7 @@ def export_data(config: Dict, experiments_list: List[str] = None) -> Tuple[List,
         config_list {List[dict]} -- List of individual configs for each experiment after inheriting from and overwriting DEFAULT
     """
     default_config, experiment_configs, experiment_names = parse_config(config, experiments_list)
-    valid_configs = check_valid_configs(default_config, experiment_configs, experiment_names)
+    valid_configs = check_valid_configs(default_config, experiment_configs, experiment_names, from_command_line)
     if not valid_configs:
         sys.exit("Aborting execution because of invalid config file")
     config_list = merge_default(default_config, experiment_configs)

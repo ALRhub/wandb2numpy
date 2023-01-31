@@ -14,7 +14,7 @@ args = parser.parse_args()
 def main():
     config = load_config(args.config_path)
 
-    experiment_data_dict, config_list = export_data(config, args.experiments)
+    experiment_data_dict, config_list = export_data(config, args.experiments, from_command_line=True)
     
     for i, experiment in enumerate(experiment_data_dict.keys()):
         experiment_dir = create_output_dirs(config_list[i], experiment)

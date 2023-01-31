@@ -13,11 +13,16 @@ def extract_data(run, fields, config):
     if fields == "all" or fields == ["all"]:
         # get history with only 1 sample, to extract all available field names
         dummy_history_all_fields = run.history(samples = 1, pandas=False)
-        all_fields_list = list(dummy_history_all_fields[0].keys())
-        # remove fields that are automatically logged by wandb
-        all_fields_list.remove("_step")
-        all_fields_list.remove("_runtime")
-        all_fields_list.remove("_timestamp")
+        if list(dummy_history_all_fields): # check that history is not empty
+            all_fields_list = list(dummy_history_all_fields[0].keys())
+            # remove fields that are automatically logged by wandb
+            if "_step" in all_fields_list: all_fields_list.remove("_step")
+            if "_runtime" in all_fields_list: all_fields_list.remove("_runtime")
+            if "_timestamp" in all_fields_list: all_fields_list.remove("_timestamp")
+        else: 
+            all_fields_list = []
+            tqdm.write("Warning: Current run contains no fields at all.")
+        
         fields = all_fields_list
 
     if 'history_samples' in config.keys():
@@ -50,8 +55,12 @@ def extract_data(run, fields, config):
 def run_dict_to_field_dict(run_dict, config):
     n_runs = len(run_dict)
     output_dict = {}
-    for field in run_dict[0]:
-        non_empty_runs = [run_dict[i][field] for i in range(n_runs) if field in run_dict[i].keys() and len(run_dict[i][field]) != 0]
+    all_fields = set()
+    for x in list(run_dict.keys()):
+        all_fields.update(list(run_dict[x].keys()))
+
+    for field in all_fields:
+        non_empty_runs = [run_dict[i][field] for i in range(n_runs) if field in run_dict[i].keys() and len(run_dict[i][field]) != 0 and not isinstance(run_dict[i][field][0], dict)]
         n_non_empty_runs = len(non_empty_runs)
         if n_non_empty_runs > 0:
             max_steps = max([len(run) for run in non_empty_runs])
