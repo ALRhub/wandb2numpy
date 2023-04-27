@@ -1,11 +1,24 @@
 import numpy as np
 import pandas as pd
+from collections import defaultdict
 from tqdm import tqdm
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
+
+
+def nested_dict(dtype=list):
+    return defaultdict(lambda: defaultdict(dtype))
+
+
+# from https://stackoverflow.com/questions/26496831/how-to-convert-defaultdict-of-defaultdicts-of-defaultdicts-to-dict-of-dicts-o
+def default_to_regular(d):
+    if isinstance(d, defaultdict):
+        d = {k: default_to_regular(v) for k, v in d.items()}
+    return d
+
 
 def extract_data(run, fields, config):
     max_samples = 12000
@@ -52,6 +65,7 @@ def extract_data(run, fields, config):
         data_dict[key] = np.array(data_list)
     return data_dict
 
+
 def run_dict_to_field_dict(run_dict, config):
     n_runs = len(run_dict)
     output_dict = {}
@@ -84,6 +98,7 @@ def run_dict_to_field_dict(run_dict, config):
             output_dict[field] = output_array
     return output_dict
 
+
 def pad_run(array, max_steps):
     steps = array.shape[0]
     print(f"Warning: Run has {max_steps - steps} steps less than longest run, padding array with NaNs")
@@ -107,6 +122,7 @@ def deep_update(base_dict: dict, update_dict: dict) -> dict:
         else:
             base_dict[key] = update_dict[key]
     return base_dict
+
 
 def filter_match(config, filter_param, run_param):
     if not filter_param in config.keys():

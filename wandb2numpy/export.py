@@ -1,6 +1,7 @@
 import wandb
 import sys
 
+from collections import defaultdict
 from tqdm import tqdm
 from typing import Dict, List, Tuple
 from wandb2numpy import util
@@ -8,11 +9,18 @@ from wandb2numpy import util
 from wandb2numpy.config_loader import parse_config, check_valid_configs, merge_default
 from wandb2numpy.filtering import get_filtered_runs
 
-def export_data(config: Dict, experiments_list: List[str] = None, from_command_line: bool = False) -> Tuple[List, List[str]]:
+
+def export_data(config: Dict,
+                experiments_list: List[str] = None,
+                from_command_line: bool = False,
+                by_group_and_job_type: bool = False,
+                ) -> Tuple[Dict[str, any], List[Dict]]:
     """Exports data to numpy or pandas, according to specifications provided in the config dictionary
     Arguments:
         config {dict} -- config dictionary
         experiment_list {List[str]} -- a list of experiments to be exported. If None, all experiments are exported.
+        from_command_line {bool} -- ?
+        by_group_and_job_type {bool} -- If true, the runs are grouped by wandb group name and job type
     Returns:
         experiment_data_dict {dict} -- One top-level entry per exported experiment. On the next level, one entry per exported field.
         Value for each field is either a pandas dataframe or a numpy array, 
@@ -44,13 +52,24 @@ def export_data(config: Dict, experiments_list: List[str] = None, from_command_l
         if 'history_samples' in config.keys() and config['history_samples'] != "all":
             print(f"Using sampled history of runs with sample size {config['history_samples']}. Runs that are shorter than that keep their original length.")
 
-        all_runs_dict = {}
+        all_runs_dict = util.nested_dict()
 
         for j, run in enumerate(tqdm(run_list)):
             current_run_dict = util.extract_data(run, config["fields"], config)
-            all_runs_dict[j] = current_run_dict
+            if by_group_and_job_type:
+                all_runs_dict[run.group][run.job_type].append(current_run_dict)
+            else:
+                all_runs_dict[j] = current_run_dict
 
-        field_dict = util.run_dict_to_field_dict(all_runs_dict, config)
-        experiment_data_dict[experiment_names[i]] = field_dict
+        if by_group_and_job_type:
+            out = util.nested_dict(dict)
+            for group_name, group_runs in all_runs_dict.items():
+                for job_type, runs in group_runs.items():
+                    field_dict = util.run_dict_to_field_dict({k: v for k, v in enumerate(runs)}, config)
+                    out[group_name][job_type] = field_dict
+            experiment_data_dict[experiment_names[i]] = util.default_to_regular(out)
+        else:
+            field_dict = util.run_dict_to_field_dict(all_runs_dict, config)
+            experiment_data_dict[experiment_names[i]] = field_dict
 
     return experiment_data_dict, config_list
